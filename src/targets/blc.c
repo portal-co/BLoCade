@@ -60,7 +60,7 @@ static void write_blc2_context(struct context *context, int size){
 	}
 	int len = 8 * sizeof(size) - __builtin_clz(size);
 	write_context(context, "1");
-	write_blc2_context(context, len);
+	write_blc2_context(context, len - 1);
 	for(int i = 0; i < len - 2; i++){
 		int j = size & (1 << i);
 		if(j){
