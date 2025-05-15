@@ -19,6 +19,7 @@
 
 struct context {
 	enum { WRITE_BITS, WRITE_ASCII } type;
+	_Bool blc2;
 	FILE *file;
 	char *byte;
 	int *bit;
@@ -52,6 +53,24 @@ static void write_context(struct context *context, const char *bits)
 	}
 }
 
+static void write_blc2_context(struct context *context, int size){
+	if(size == 0){
+		write_context(context, "10");
+		return;
+	}
+	int len = 8 * sizeof(size) - __builtin_clz(size);
+	write_context(context, "1");
+	write_blc2_context(context, len);
+	for(int i = 0; i < len - 2; i++){
+		int j = size & (1 << i);
+		if(j){
+			write_context(context, "1");
+		}else{
+			write_context(context, "0");
+		}
+	}
+}
+
 static void write_blc_substituted(struct term *term, int depth,
 				  struct context *context)
 {
@@ -66,9 +85,13 @@ static void write_blc_substituted(struct term *term, int depth,
 		write_blc_substituted(term->u.app.rhs, depth, context);
 		break;
 	case VAR:
-		for (int i = 0; i <= term->u.var.index; i++)
-			write_context(context, "1");
-		write_context(context, "0");
+		if(!context->blc2){
+			for (int i = 0; i <= term->u.var.index; i++)
+				write_context(context, "1");
+			write_context(context, "0");
+		}else{
+			write_blc2_context(context, term->u.var.index);
+		};
 		break;
 	case REF:
 		if (term->u.ref.index + 1 >= context->bloc->length)
@@ -80,9 +103,13 @@ static void write_blc_substituted(struct term *term, int depth,
 				     context->position) -
 				    1;
 			assert(index >= 0);
-			for (int i = 0; i <= index; i++)
-				write_context(context, "1");
-			write_context(context, "0");
+			if(!context->blc2){
+				for (int i = 0; i <= index; i++)
+					write_context(context, "1");
+				write_context(context, "0");
+			}else{
+				write_blc2_context(context, index);
+			}
 		} else {
 			write_blc_substituted(
 				context->bloc->entries[term->u.ref.index],
@@ -240,6 +267,7 @@ static void write_blc_ascii(struct bloc_parsed *bloc, FILE *file)
 	struct context context = {
 		.type = WRITE_ASCII,
 		.file = file,
+		.blc2 =0,
 	};
 	write_blc(bloc, &context);
 }
@@ -251,6 +279,33 @@ static void write_blc_bits(struct bloc_parsed *bloc, FILE *file)
 	struct context context = {
 		.type = WRITE_BITS,
 		.file = file,
+		.blc2 = 0,
+		.byte = &byte,
+		.bit = &bit,
+	};
+	write_blc(bloc, &context);
+	if (bit)
+		fwrite(&byte, 1, 1, file);
+}
+
+static void write_blc2_ascii(struct bloc_parsed *bloc, FILE *file)
+{
+	struct context context = {
+		.type = WRITE_ASCII,
+		.file = file,
+		.blc2 = 1,
+	};
+	write_blc(bloc, &context);
+}
+
+static void write_blc2_bits(struct bloc_parsed *bloc, FILE *file)
+{
+	char byte = 0;
+	int bit = 0;
+	struct context context = {
+		.type = WRITE_BITS,
+		.file = file,
+		.blc2 = 1,
 		.byte = &byte,
 		.bit = &bit,
 	};
@@ -267,4 +322,14 @@ struct target_spec target_blc = {
 struct target_spec target_bblc = {
 	.name = "bblc",
 	.exec = write_blc_bits,
+};
+
+struct target_spec target_blc2 = {
+	.name = "blc2",
+	.exec = write_blc2_ascii,
+};
+
+struct target_spec target_bblc2 = {
+	.name = "bblc2",
+	.exec = write_blc2_bits,
 };

@@ -10,12 +10,16 @@ extern struct target_spec target_unblc;
 extern struct target_spec target_unbblc;
 extern struct target_spec target_blc;
 extern struct target_spec target_bblc;
+extern struct target_spec target_blc2;
+extern struct target_spec target_bblc2;
 
 static struct target_spec *targets[] = {
 	&target_unblc,
 	&target_unbblc,
 	&target_blc,
 	&target_bblc,
+	&target_blc2,
+	&target_bblc2,
 };
 
 void exec_target(char *name, struct bloc_parsed *bloc, FILE *file)
