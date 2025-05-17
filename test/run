@@ -5,7 +5,7 @@
 FAIL="\033[0;31m[FAIL]\033[0m "
 SUCC="\033[0;32m[ OK ]\033[0m "
 
-rm -f ../build/*.out ../build/*.blc ../build/*.bloc
+rm -f ../build/*.out ../build/*.blc ../build/*.bloc ../build/*.blc2
 
 for file in *.blc; do
 	bloc --from-blc -i "$file" -o ../build/"$file".bloc
