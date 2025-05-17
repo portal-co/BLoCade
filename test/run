@@ -11,6 +11,8 @@ for file in *.blc; do
 	bloc --from-blc -i "$file" -o ../build/"$file".bloc
 	../build/blocade -i ../build/"$file".bloc -t blc -o ../build/"$file".bloc.blc
 	../build/blocade -i ../build/"$file".bloc -t bblc -o ../build/"$file".bloc.bblc
+	../build/blocade -i ../build/"$file".bloc -t blc2 -o ../build/"$file".bloc.blc2
+	../build/blocade -i ../build/"$file".bloc -t bblc2 -o ../build/"$file".bloc.bblc2
 	bruijn -E "$file" &>../build/"$file".out
 
 	bruijn -E ../build/"$file".bloc.blc &>../build/"$file".bloc.blc.out
@@ -30,6 +32,8 @@ for file in *.blc.io; do
 	bloc --from-blc -i "$file" -o ../build/"$file".bloc
 	../build/blocade -i ../build/"$file".bloc -t blc -o ../build/"$file".bloc.blc
 	../build/blocade -i ../build/"$file".bloc -t bblc -o ../build/"$file".bloc.bblc
+	../build/blocade -i ../build/"$file".bloc -t blc2 -o ../build/"$file".bloc.blc2
+	../build/blocade -i ../build/"$file".bloc -t bblc2 -o ../build/"$file".bloc.bblc2
 	cat "$file".in | bruijn -E "$file" &>../build/"$file".out
 
 	cat "$file".in | bruijn -E ../build/"$file".bloc.blc &>../build/"$file".bloc.blc.out
